@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* Product card style */
+.product-layout {
+  display: flex;
+}
+
+.product-card {
+  max-width: 80rem;
+  background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  border-radius: 12px;
+}
+
+.product-card__container {
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  box-sizing: border-box;
+}
+
+.product-card__media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.product-card__main-image img {
+  border-radius: 0.5rem;
+}
+
+.product-card__details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.product-card__info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.product-card__title {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.product-card__price {
+  display: flex;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.product-card__view-button {
+  background-color: #000000;
+  color: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border: 2px solid black;
+  cursor: pointer;
+}
+
+.product-card__view-button:hover {
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid black;
+}
+
+/* Modal styles */
+.product-modal {
+  padding: 0;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  border: 0;
+}
+
+.product-modal::backdrop {
+  background-color: rgba(156, 163, 175, 0.5);
+}
+
+.product-modal__container {
+  position: relative;
+  overflow-x: hidden;
+  padding: 2rem;
+}
+
+.product-modal__close-container {
+  display: grid;
+  justify-items: end;
+  justify-content: end;
+  margin-left: 2rem;
+  padding-bottom: 1rem;
+}
+
+.product-modal__close {
+  border-radius: 12px;
+  width: 32px;
+  height: 32px;
+  border: 0;
+  cursor: pointer;
+}
+
+.product-modal__content {
+  width: 100%;
+  background-color: #ffffff;
+  border-radius: 0.75rem;
+  max-width: 54rem;
+  min-width: 320px;
+}
+
+.product-modal__layout {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .product-modal__layout {
+    flex-direction: row;
+  }
+}
+
+.product-modal__media {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.product-modal__media img {
+  border-radius: 0.25rem;
+  width: 100%;
+}
+
+.product-modal__details {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+}
+
+.product-modal__header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.product-modal__vendor {
+  opacity: 0.5;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.product-modal__title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.product-modal__price-container {
+  display: flex;
+  gap: 0.5rem;
+  font-weight: 500;
+  font-size: 1.25rem;
+}
+
+.product-modal__compare-price {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+.product-modal__buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.product-modal__buttons button {
+  font-size: 0.875rem;
+  font-weight: 800;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+  border: 2px solid black;
+  text-transform: uppercase;
+}
+
+.product-modal__add-button {
+  background-color: #000000;
+  color: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-size: 18px;
+  font-weight: 500;
+  width: 100%;
+}
+
+.product-modal__add-button:hover {
+  background: #ffffff;
+  color: #000000;
+  border: 2px solid black;
+}
+
+.product-modal__add-button:disabled {
+  opacity: 0.3;
+}
+
+.product-modal__buy-button {
+  background-color: #ffffff;
+  color: #000000;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  font-size: 18px;
+  font-weight: 500;
+  width: 100%;
+}
+
+.product-modal__buy-button:disabled {
+  opacity: 0.3;
+}
+
+.product-modal__buy-button:hover {
+  opacity: 0.3;
+}
+
+.product-modal__description-text {
+  font-weight: 400;
+  color: #717171;
+  letter-spacing: 0.05em;
+  font-size: 0.875rem;
+}
+
+.product-modal__description-text p {
+  margin: 0;
+}
