@@ -10,7 +10,7 @@ export default async function decorate(block) {
     const response = await fetch('http://localhost:8080/');
     if (response.ok) {
       const fetchedData = await response.json();
-      data = fetchedData;
+      data = JSON.stringify(fetchedData);
     }
   } catch (error) {
     console.error('Error fetching data:', error);
