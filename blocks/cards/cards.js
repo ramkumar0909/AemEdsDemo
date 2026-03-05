@@ -4,10 +4,36 @@ export default async function decorate(block) {
   /* change to ul, li */
   const ul = document.createElement('ul');
 
-  // Fetch data from localhost:8080
+  // Fetch data from GraphQL endpoint
   let data = 'Test1, Test2, Test3'; // Default data in case fetch fails
   try {
-    const response = await fetch('http://localhost:8080/');
+    const response = await fetch('http://localhost:3000/api/2025-10/graphql.json', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        query: `query GetProductListMinimal {
+  products(first: 20) {
+    nodes {
+      id
+      handle
+      title
+      featuredImage {
+        url
+      }
+      priceRange {
+        minVariantPrice {
+          amount
+          currencyCode
+        }
+      }
+    }
+  }
+}`,
+        variables: {},
+      }),
+    });
     if (response.ok) {
       const fetchedData = await response.json();
       data = JSON.stringify(fetchedData);
