@@ -5,7 +5,7 @@ export default async function decorate(block) {
   const ul = document.createElement('ul');
 
   // Fetch data from localhost:8080
-  let data = 'Test';
+  let data = 'Test1, Test2, Test3'; // Default data in case fetch fails
   try {
     const response = await fetch('http://localhost:8080/data');
     if (response.ok) {
@@ -13,7 +13,6 @@ export default async function decorate(block) {
       data = fetchedData;
     }
   } catch (error) {
-    // eslint-disable-next-line no-console
     console.error('Error fetching data:', error);
   }
 
