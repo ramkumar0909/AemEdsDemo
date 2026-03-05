@@ -161,4 +161,5 @@ export default async function decorate(block) {
   } catch (e) {
     renderState(block, titleText, 'error', `Could not load products. ${e.message}`);
   }
+  addEventListeners(block);
 }
