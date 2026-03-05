@@ -5,7 +5,7 @@ export default async function decorate(block) {
   const ul = document.createElement('ul');
 
   // Fetch data from GraphQL endpoint
-  let data = 'Test1, Test2, Test3'; // Default data in case fetch fails
+  let products = []; // Default empty array in case fetch fails
   try {
     const response = await fetch('http://localhost:3000/api/2025-10/graphql.json', {
       method: 'POST',
@@ -37,20 +37,47 @@ export default async function decorate(block) {
     });
     if (response.ok) {
       const fetchedData = await response.json();
-      data = JSON.stringify(fetchedData);
+      products = fetchedData.data?.products?.nodes || [];
     }
   } catch (error) {
     console.error('Error fetching data:', error);
   }
 
-  [...block.children].forEach((row) => {
+  [...block.children].forEach((row, index) => {
     const li = document.createElement('li');
     while (row.firstElementChild) li.append(row.firstElementChild);
     [...li.children].forEach((div) => {
       if (div.children.length === 1 && div.querySelector('picture')) div.className = 'cards-card-image';
       else div.className = 'cards-card-body';
     });
-    li.append(data);
+
+    // Add product details if available
+    if (products.length > 0 && products[index]) {
+      const product = products[index];
+      const productDetails = document.createElement('div');
+      productDetails.className = 'cards-product-details';
+
+      const title = document.createElement('h3');
+      title.textContent = product.title;
+      productDetails.append(title);
+
+      if (product.featuredImage?.url) {
+        const img = document.createElement('img');
+        img.src = product.featuredImage.url;
+        img.alt = product.title;
+        productDetails.append(img);
+      }
+
+      const price = document.createElement('p');
+      const amount = product.priceRange?.minVariantPrice?.amount;
+      const currency = product.priceRange?.minVariantPrice?.currencyCode;
+      price.textContent = `${currency} ${amount}`;
+      price.className = 'cards-product-price';
+      productDetails.append(price);
+
+      li.append(productDetails);
+    }
+
     ul.append(li);
   });
   ul.querySelectorAll('picture > img').forEach((img) => img.closest('picture').replaceWith(createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }])));
