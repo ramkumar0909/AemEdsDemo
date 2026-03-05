@@ -7,7 +7,7 @@ export default async function decorate(block) {
   // Fetch data from localhost:8080
   let data = 'Test1, Test2, Test3'; // Default data in case fetch fails
   try {
-    const response = await fetch('http://localhost:8080/data');
+    const response = await fetch('http://localhost:8080/');
     if (response.ok) {
       const fetchedData = await response.json();
       data = fetchedData;
