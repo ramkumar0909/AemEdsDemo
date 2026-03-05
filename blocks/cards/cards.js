@@ -9,6 +9,7 @@ export default async function decorate(block) {
   try {
     const response = await fetch('http://localhost:3000/api/2025-10/graphql.json', {
       method: 'POST',
+      mode: 'cors',
       headers: {
         'Content-Type': 'application/json',
       },
