@@ -1,138 +1,164 @@
-export default function decorate(block) {
-  // Load Shopify web components library
-  const script = document.createElement('script');
-  script.type = 'module';
-  script.src = 'https://cdn.shopify.com/storefront/web-components.js';
-  document.head.appendChild(script);
+import { getMetadata } from '../../scripts/aem.js';
 
-  // Create the main product layout container
-  const productLayout = document.createElement('div');
-  productLayout.className = 'product-layout';
+const QUERY = `
+  query GetProductListMinimal {
+    products(first: 20) {
+      nodes {
+        id
+        handle
+        title
+        featuredImage {
+          url
+        }
+        priceRange {
+          minVariantPrice {
+            amount
+            currencyCode
+          }
+        }
+      }
+    }
+  }
+`;
 
-  // Create product card
-  const productCard = document.createElement('div');
-  productCard.className = 'product-card';
+function formatMoney(amount, currencyCode) {
+  const n = Number(amount);
+  if (Number.isNaN(n)) return '';
+  try {
+    return new Intl.NumberFormat(undefined, {
+      style: 'currency',
+      currency: currencyCode || 'USD',
+    }).format(n);
+  } catch (e) {
+    return `${n.toFixed(2)} ${currencyCode || ''}`.trim();
+  }
+}
 
-  // Create product context with template
-  const productContext = document.createElement('shopify-context');
-  productContext.setAttribute('type', 'product');
-  productContext.setAttribute('handle', 'hoodie');
+async function fetchProducts(endpoint) {
+  const resp = await fetch(endpoint, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: QUERY }),
+  });
 
-  const template = document.createElement('template');
+  if (!resp.ok) {
+    const text = await resp.text();
+    throw new Error(`HTTP ${resp.status}: ${text}`);
+  }
 
-  template.innerHTML = `
-    <div class="product-card__container">
-      <div class="product-card__media">
-        <div class="product-card__main-image">
-          <shopify-media width="280" height="280" query="product.selectedOrFirstAvailableVariant.image"></shopify-media>
-        </div>
-      </div>
-      <div class="product-card__details">
-        <div class="product-card__info">
-          <h2 class="product-card__title">
-            <shopify-data query="product.title"></shopify-data>
-          </h2>
-          <div class="product-card__price">
-            <shopify-money query="product.selectedOrFirstAvailableVariant.price"></shopify-money>
-          </div>
-        </div>
-        <button
-          class="product-card__view-button"
-          onclick="getElementById('product-modal').showModal(); getElementById('product-modal-context').update(event);"
-        >
-          View product
-        </button>
-      </div>
-    </div>
-  `;
+  const json = await resp.json();
+  if (json.errors) {
+    throw new Error(`GraphQL errors: ${JSON.stringify(json.errors)}`);
+  }
 
-  productContext.appendChild(template);
-  productCard.appendChild(productContext);
-  productLayout.appendChild(productCard);
+  return json?.data?.products?.nodes || [];
+}
 
-  // Create Shopify store context
-  const shopifyStore = document.createElement('shopify-store');
-  shopifyStore.setAttribute('store-domain', 'mock.shop');
-  shopifyStore.setAttribute('country', 'US');
-  shopifyStore.setAttribute('language', 'en');
+function renderState(block, titleText, state, message) {
+  const container = document.createElement('div');
+  container.className = 'shopify-products__container';
 
-  // Create cart element
-  const cart = document.createElement('shopify-cart');
-  cart.id = 'cart';
+  if (titleText) {
+    const h2 = document.createElement('h2');
+    h2.className = 'shopify-products__title';
+    h2.textContent = titleText;
+    container.append(h2);
+  }
 
-  // Create modal dialog
-  const modal = document.createElement('dialog');
-  modal.id = 'product-modal';
-  modal.className = 'product-modal';
+  const status = document.createElement('div');
+  status.className = `shopify-products__status shopify-products__status--${state}`;
+  status.textContent = message;
 
-  const modalContext = document.createElement('shopify-context');
-  modalContext.id = 'product-modal-context';
-  modalContext.setAttribute('type', 'product');
-  modalContext.setAttribute('wait-for-update', '');
+  container.append(status);
+  block.replaceChildren(container);
+}
 
-  const modalTemplate = document.createElement('template');
-  modalTemplate.innerHTML = `
-    <div class="product-modal__container">
-      <div class="product-modal__close-container">
-        <button class="product-modal__close" onclick="getElementById('product-modal').close();">&#10005;</button>
-      </div>
-      <div class="product-modal__content">
-        <div class="product-modal__layout">
-          <div class="product-modal__media">
-            <shopify-media width="416" height="416" query="product.selectedOrFirstAvailableVariant.image"></shopify-media>
-          </div>
-          <div class="product-modal__details">
-            <div class="product-modal__header">
-              <div>
-                <span class="product-modal__vendor">
-                  <shopify-data query="product.vendor"></shopify-data>
-                </span>
-              </div>
-              <h1 class="product-modal__title">
-                <shopify-data query="product.title"></shopify-data>
-              </h1>
-              <div class="product-modal__price-container">
-                <shopify-money query="product.selectedOrFirstAvailableVariant.price"></shopify-money>
-                <shopify-money
-                  class="product-modal__compare-price"
-                  query="product.selectedOrFirstAvailableVariant.compareAtPrice"
-                ></shopify-money>
-              </div>
-            </div>
-            <shopify-variant-selector></shopify-variant-selector>
-            <div class="product-modal__buttons">
-              <button
-                class="product-modal__add-button"
-                onclick="getElementById('cart').addLine(event).showModal();"
-                shopify-attr--disabled="!product.selectedOrFirstAvailableVariant.availableForSale"
-              >
-                Add to cart
-              </button>
-              <button
-                class="product-modal__buy-button"
-                onclick="document.querySelector('shopify-store').buyNow(event)"
-                shopify-attr--disabled="!product.selectedOrFirstAvailableVariant.availableForSale"
-              >
-                Buy now
-              </button>
-            </div>
-            <div class="product-modal__description">
-              <span class="product-modal__description-text">
-                <shopify-data query="product.descriptionHtml"></shopify-data>
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  `;
+function renderGrid(block, titleText, products) {
+  const container = document.createElement('div');
+  container.className = 'shopify-products__container';
 
-  modalContext.appendChild(modalTemplate);
-  modal.appendChild(modalContext);
+  if (titleText) {
+    const h2 = document.createElement('h2');
+    h2.className = 'shopify-products__title';
+    h2.textContent = titleText;
+    container.append(h2);
+  }
 
-  // Append all elements to the block
-  block.appendChild(shopifyStore);
-  block.appendChild(productLayout);
-  block.appendChild(cart);
-  block.appendChild(modal);
+  const grid = document.createElement('ul');
+  grid.className = 'shopify-products__grid';
+
+  products.forEach((p) => {
+    const li = document.createElement('li');
+    li.className = 'shopify-products__card';
+
+    const a = document.createElement('a');
+    a.className = 'shopify-products__link';
+
+    // Demo-friendly: keep it safe even if you don't have product pages wired yet.
+    // If you DO have PDPs, switch to: `/products/${p.handle}`
+    a.href = '#';
+    a.setAttribute('aria-label', p.title || 'Product');
+
+    const imgWrap = document.createElement('div');
+    imgWrap.className = 'shopify-products__image-wrap';
+
+    if (p.featuredImage?.url) {
+      const img = document.createElement('img');
+      img.className = 'shopify-products__image';
+      img.loading = 'lazy';
+      img.alt = p.title || '';
+      img.src = p.featuredImage.url;
+      imgWrap.append(img);
+    } else {
+      const placeholder = document.createElement('div');
+      placeholder.className = 'shopify-products__placeholder';
+      placeholder.textContent = 'No image';
+      imgWrap.append(placeholder);
+    }
+
+    const info = document.createElement('div');
+    info.className = 'shopify-products__info';
+
+    const name = document.createElement('div');
+    name.className = 'shopify-products__name';
+    name.textContent = p.title || '';
+
+    const min = p.priceRange?.minVariantPrice;
+    const price = document.createElement('div');
+    price.className = 'shopify-products__price';
+    price.textContent = min ? formatMoney(min.amount, min.currencyCode) : '';
+
+    info.append(name, price);
+    a.append(imgWrap, info);
+    li.append(a);
+    grid.append(li);
+  });
+
+  container.append(grid);
+  block.replaceChildren(container);
+}
+
+export default async function decorate(block) {
+  // Title row (optional)
+  const maybeTitle = block.querySelector(':scope > div > div');
+  const titleText = maybeTitle ? maybeTitle.textContent.trim() : '';
+
+  // Use local mock.shop endpoint via meta
+  // Example: <meta name="shopify-endpoint" content="http://localhost:4010/api">
+  const endpoint = getMetadata('shopify-endpoint') || 'https://mock.shop/api';
+
+  renderState(block, titleText, 'loading', 'Loading products…');
+
+  try {
+    const products = await fetchProducts(endpoint);
+
+    if (!products.length) {
+      renderState(block, titleText, 'empty', 'No products found.');
+      return;
+    }
+
+    renderGrid(block, titleText, products);
+  } catch (e) {
+    renderState(block, titleText, 'error', `Could not load products. ${e.message}`);
+  }
 }
